@@ -5,7 +5,6 @@ from requests import cookies
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
 import json
 # from bs4 import BeautifulSoup
 # /getRegistrationEvents?termFilter=null
@@ -18,10 +17,12 @@ REGISTER_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/cla
 ADD_API = "/addRegistrationItem?term=%i&courseReferenceNumber=%i&olr=false"
 GET_API = "/getRegistrationEvents?termFilter=null"
 GET_API_PARAM = "&crn=%i"
+SUBMIT_API = "submitRegistration/batch"
+
 # refer to REGISTER_URL
 
 class Cookies:
-    def __init__(self, netid:str, term:str="120228",driver=webdriver.Edge(), session=requests.session(), retry=5):
+    def __init__(self, netid:str, term:int=120228, driver=webdriver.Edge(), session=requests.session(), retry=5):
         self.netid = netid
         self.term = term
         self.driver = driver
@@ -92,21 +93,31 @@ class Cookies:
         term_go = self.driver.find_element(By.ID, "term-go")
         term_go.click()
 
-    def GetRegisteredCourses(self, load_limit:int=50) -> list[dict]:
+    def GetRegisteredCourses(self, load_limit:int=50, load_interval:int=0.5) -> list[dict]:
         # ! TO DO !
         times = 0
         courses = list()
-        while True:
-            time.sleep(0.5)
+        while times < load_limit:
+            time.sleep(load_interval)
             times += 1
             courses = json.loads(self.session.get(url=REGISTER_URL + GET_API).content)
-            print(courses)
-            if courses != list() or time > load_limit:
+            if courses != list():
                 break
         return courses
-    def AddCourse(self) -> None:
+    def AddCourse(self, crn:int, load_limit:int=50, load_interval:int=0.5) -> bool:
+        # ! TO DO: Detect what prevent from adding course !
+        # Course that are not submitted would be clear after closed
+        times = 0
+        res = list()
+        while times < load_limit:
+            time.sleep(load_interval)
+            times += 1
+            res = json.loads(self.session.post(REGISTER_URL + ADD_API%(self.term, crn)).content)
+            if res["success"] or res["message"] != "Please contact the help desk":
+                break
+        return res["success"]
+    def SubmitCourse(self) -> None:
         # ! TO DO !
-        self.session.post()
         pass
     def AddCourseUntil(self) -> None:
         # ! TO DO !
@@ -118,7 +129,10 @@ t = Cookies("yiweig3")
 t.Login("Abc147259")
 t.SelectTerm()
 t.LoadCookies()
+# t.GetRegisteredCourses()
+# time.sleep(5)
+t.AddCourse(39539)
 t.GetRegisteredCourses()
-t.Close()
+# t.Close()
 
 
