@@ -1,0 +1,12 @@
+BANNER_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/registration?mepCode=1UIUC"
+
+TERM_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/term/termSelection?mode=registration"
+
+TERM_SELECT_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/term/search?mode=registration"
+# Use Post to send term number; must select term first before adding or viewing course
+REGISTER_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/classRegistration/classRegistration"
+# Jump to BANNER course registeration
+ADD_API = "/addRegistrationItem?term=%i&courseReferenceNumber=%i&olr=false"
+# api for adding course; first para is term, second is crn, last one unknown; must sent with correct cookies. Refer to REGISTER_URL
+GET_API = "/getRegistrationEvents?termFilter=null&crn=%i"
+# api for return course item in current schedule; first param unknown, second param is crn; refer to REGISTER_URL
