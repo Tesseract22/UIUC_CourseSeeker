@@ -1,5 +1,7 @@
+from email import message
 from multiprocessing.sharedctypes import Value
 from os import times
+from re import sub
 import time
 from requests import cookies
 import requests
@@ -17,7 +19,7 @@ REGISTER_URL = "https://banner.apps.uillinois.edu/StudentRegistrationSSB/ssb/cla
 ADD_API = "/addRegistrationItem?term=%i&courseReferenceNumber=%i&olr=false"
 GET_API = "/getRegistrationEvents?termFilter=null"
 GET_API_PARAM = "&crn=%i"
-SUBMIT_API = "submitRegistration/batch"
+SUBMIT_API = "/submitRegistration/batch"
 
 # refer to REGISTER_URL
 
@@ -116,10 +118,26 @@ class Cookies:
             if res["success"] or res["message"] != "Please contact the help desk":
                 break
         return res["success"]
-    def SubmitCourse(self) -> None:
+    def SubmitCourse(self) -> str:
         # ! TO DO !
+        submit = json.loads(self.session.post(REGISTER_URL + SUBMIT_API).content)
+        if not submit["success"]:
+            print("internet connection error")
+        message = submit["message"]
+        course = submit["data"]["update"][-1]
+        course_info = course["subject"] + " " + course["campus"] + " " + course["courseReferenceNumber"]
+        try:
+            error_flag = course["errorFlag"]
+        except: 
+            return True
+        message_type = course["messageType"]
+        status = course["courseRegistrationStatus"]
+        print(status)
+                # print(submit)
+        # with open("test.txt", "wb") as f:
+        #     f.write(submit.content)
         pass
-    def AddCourseUntil(self) -> None:
+    def CaptureCourseUntil(self) -> None:
         # ! TO DO !
         pass
 
@@ -131,8 +149,9 @@ t.SelectTerm()
 t.LoadCookies()
 # t.GetRegisteredCourses()
 # time.sleep(5)
-t.AddCourse(39539)
-t.GetRegisteredCourses()
-# t.Close()
+t.AddCourse(29867)
+# t.GetRegisteredCourses()
+t.SubmitCourse()
+t.Close()
 
 
