@@ -1,3 +1,4 @@
+from distutils.log import error
 from email import message
 from multiprocessing.sharedctypes import Value
 from os import times
@@ -23,9 +24,10 @@ SUBMIT_API = "/submitRegistration/batch"
 
 # refer to REGISTER_URL
 
-class Cookies:
-    def __init__(self, netid:str, term:int=120228, driver=webdriver.Edge(), session=requests.session(), retry=5):
+class CaptuerCourse:
+    def __init__(self, netid:str, password:str, term:int=120228, driver=webdriver.Edge(), session=requests.session(), retry=5):
         self.netid = netid
+        self.password = password
         self.term = term
         self.driver = driver
         self.session = session
@@ -33,10 +35,7 @@ class Cookies:
         self.session_id = ""
         self.retry = retry
 
-    def main(self):
-        # ! TO DO !
-        pass
-    def Login(self, password:str) -> bool:
+    def Login(self) -> bool:
 
         self.driver.get(BANNER_URL)
         self.driver.get(TERM_URL)
@@ -46,7 +45,7 @@ class Cookies:
         submit_key = self.driver.find_element(by=By.NAME, value="BTN_LOGIN")
 
         netid_key.send_keys(self.netid)
-        password_key.send_keys(password)
+        password_key.send_keys(self.password)
         submit_key.click()
 
         # ! TO DO: Login Success Decider to be implemented !
@@ -118,7 +117,7 @@ class Cookies:
             if res["success"] or res["message"] != "Please contact the help desk":
                 break
         return res["success"]
-    def SubmitCourse(self) -> str:
+    def SubmitCourse(self):
         # ! TO DO !
         submit = json.loads(self.session.post(REGISTER_URL + SUBMIT_API).content)
         if not submit["success"]:
@@ -126,13 +125,9 @@ class Cookies:
         message = submit["message"]
         course = submit["data"]["update"][-1]
         course_info = course["subject"] + " " + course["campus"] + " " + course["courseReferenceNumber"]
-        try:
-            error_flag = course["errorFlag"]
-        except: 
-            return True
+        error_flag = course["errorFlag"]
         message_type = course["messageType"]
-        status = course["courseRegistrationStatus"]
-        print(status)
+        return error_flag == None, message_type, course_info
                 # print(submit)
         # with open("test.txt", "wb") as f:
         #     f.write(submit.content)
@@ -141,17 +136,13 @@ class Cookies:
         # ! TO DO !
         pass
 
-
-    
-t = Cookies("yiweig3")
-t.Login("Abc147259")
-t.SelectTerm()
-t.LoadCookies()
-# t.GetRegisteredCourses()
-# time.sleep(5)
-t.AddCourse(29867)
-# t.GetRegisteredCourses()
-t.SubmitCourse()
-t.Close()
+    def main(self):
+        # ! TO DO !
+        self.Login()
+        self.SelectTerm()
+        self.LoadCookies()
+        self.AddCourse(29867)
+        self.SubmitCourse()
+        self.Close()
 
 
