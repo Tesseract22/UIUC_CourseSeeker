@@ -1,8 +1,4 @@
-from distutils.log import error
-from email import message
-from multiprocessing.sharedctypes import Value
-from os import times
-from re import sub
+
 import time
 from requests import cookies
 import requests
@@ -105,18 +101,21 @@ class CaptuerCourse:
             if courses != list():
                 break
         return courses
-    def AddCourse(self, crn:int, load_limit:int=50, load_interval:int=0.5) -> bool:
+    def AddCourse(self, *crns:int, load_limit:int=5, load_interval:int=0.5) -> bool:
         # ! TO DO: Detect what prevent from adding course !
         # Course that are not submitted would be clear after closed
-        times = 0
         res = list()
-        while times < load_limit:
-            time.sleep(load_interval)
-            times += 1
-            res = json.loads(self.session.post(REGISTER_URL + ADD_API%(self.term, crn)).content)
-            if res["success"] or res["message"] != "Please contact the help desk":
-                break
-        return res["success"]
+        for crn in crns:
+            times = 0
+            while times < load_limit:
+                time.sleep(load_interval)
+                times += 1
+                res = json.loads(self.session.post(REGISTER_URL + ADD_API%(self.term, crn)).content)
+                if res["success"]:
+                    break
+                elif res["message"] == "Section is a duplicate of an existing registration.":
+                    raise ValueError("Course already registered")
+        return True
     def SubmitCourse(self):
         # ! TO DO !
         submit = json.loads(self.session.post(REGISTER_URL + SUBMIT_API).content)
@@ -128,6 +127,8 @@ class CaptuerCourse:
         error_flag = course["errorFlag"]
         message_type = course["messageType"]
         return error_flag == None, message_type, course_info
+        # LINK
+        # SPRD
                 # print(submit)
         # with open("test.txt", "wb") as f:
         #     f.write(submit.content)
@@ -136,13 +137,18 @@ class CaptuerCourse:
         # ! TO DO !
         pass
 
-    def main(self):
+    def main(self, crn:int):
         # ! TO DO !
         self.Login()
         self.SelectTerm()
         self.LoadCookies()
-        self.AddCourse(29867)
+        self.AddCourse(crn)
         self.SubmitCourse()
         self.Close()
 
-
+t = CaptuerCourse("yiweig3", "Abc147259")
+t.Login()
+t.SelectTerm()
+t.LoadCookies()
+t.AddCourse(32023, 32020)
+t.SubmitCourse()
