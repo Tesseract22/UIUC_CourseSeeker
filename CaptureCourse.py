@@ -146,9 +146,3 @@ class CaptuerCourse:
         self.SubmitCourse()
         self.Close()
 
-t = CaptuerCourse("yiweig3", "Abc147259")
-t.Login()
-t.SelectTerm()
-t.LoadCookies()
-t.AddCourse(32023, 32020)
-t.SubmitCourse()
